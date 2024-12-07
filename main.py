@@ -15,6 +15,7 @@ py = 400
 pxa = 0
 pya = 0
 pa = 0
+fullRun = True
 
 particles = []
 r_bullets = []
@@ -39,12 +40,12 @@ class Input:
 
     @classmethod
     def press(cls, key):
-        global health, running
+        global health, running, fullRun
         if key in cls.B_LEFT: cls.LEFT = True
         elif key in cls.B_RIGHT: cls.RIGHT = True
         elif key in cls.B_UP: cls.UP = True
         elif key in cls.B_DOWN: cls.DOWN = True
-        elif key == pygame.K_ESCAPE: quit()
+        elif key == pygame.K_ESCAPE: fullRun = False
         elif health <= 0 and key == pygame.K_SPACE: running = False
 
     @classmethod
@@ -74,7 +75,7 @@ def spawn_rock(x:float, y:float, da:float):
         rock.append((a, d * 0.25 if mini else d))
     r_bullets.append((mini, rock, x, y, da, random.random() * 15 - 7.5, random.random() * math.pi * 2))
 
-while True:
+while fullRun:
     health = 1
     running = True
     px = 400
@@ -87,13 +88,13 @@ while True:
     timer = 1.5
     time_last = time.perf_counter()
     gameTime = 0
-    while running:
+    while running and fullRun:
         time_cur = time.perf_counter()
         elapsed = time_cur - time_last
         time_last = time_cur
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: quit()
+            if event.type == pygame.QUIT: fullRun = False
             elif event.type == pygame.KEYDOWN: Input.press(event.key)
             elif event.type == pygame.KEYUP: Input.release(event.key)
 
@@ -142,6 +143,9 @@ while True:
             poly = []
             for p in rock:
                 poly.append((x + p[1] * math.sin(a + p[0]), y - p[1] * math.cos(a + p[0])))
+            if x > 850 or x < -50 or y > 850 or y < -50:
+                r_bullets.remove(r_bullets[i])
+                continue
             if collidePolygonPolygon(poly, m_p):
                 health -= (0.05 + random.random() * 0.025) * (0.5 if mini else 1.0)
                 kill()
